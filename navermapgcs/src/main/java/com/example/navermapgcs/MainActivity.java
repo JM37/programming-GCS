@@ -39,7 +39,9 @@ import com.o3dr.services.android.lib.drone.companion.solo.SoloAttributes;
 import com.o3dr.services.android.lib.drone.companion.solo.SoloState;
 import com.o3dr.services.android.lib.drone.connection.ConnectionParameter;
 import com.o3dr.services.android.lib.drone.connection.ConnectionType;
+import com.o3dr.services.android.lib.drone.mission.item.command.YawCondition;
 import com.o3dr.services.android.lib.drone.property.Altitude;
+import com.o3dr.services.android.lib.drone.property.Battery;
 import com.o3dr.services.android.lib.drone.property.Gps;
 import com.o3dr.services.android.lib.drone.property.Home;
 import com.o3dr.services.android.lib.drone.property.Speed;
@@ -305,6 +307,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 updateDistanceFromHome();
                 break;
 
+            case AttributeEvent.BATTERY_UPDATED:
+                updateBattery();
+                break;
+
             default:
                 // Log.i("DRONE_EVENT", event); //Uncomment to see events from the drone
                 break;
@@ -330,13 +336,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         if (this.drone.isConnected()) {
             this.drone.disconnect();
         } else {
-            Spinner connectionSelector = (Spinner) findViewById(R.id.selectConnectionType);
-            int selectedConnectionType = connectionSelector.getSelectedItemPosition();
-
-            ConnectionParameter connectionParams = selectedConnectionType == ConnectionType.TYPE_USB
-                    ? ConnectionParameter.newUsbConnection(null)
-                    : ConnectionParameter.newUdpConnection(null);
-
+            ConnectionParameter connectionParams = ConnectionParameter.newUdpConnection(null);
             this.drone.connect(connectionParams);
         }
     }
@@ -457,6 +457,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         TextView speedTextView = (TextView) findViewById(R.id.speedValueTextView);
         Speed droneSpeed = this.drone.getAttribute(AttributeType.SPEED);
         speedTextView.setText(String.format("%3.1f", droneSpeed.getGroundSpeed()) + "m/s");
+    }
+
+    protected void updateBattery() {
+        TextView BatteryTextView = (TextView) findViewById(R.id.batteryStateTextView);
+        Battery droneBattery = this.drone.getAttribute(AttributeType.BATTERY);
+        BatteryTextView.setText(String.format("%3.1f", droneBattery.getBatteryVoltage()) + "%");
     }
 
     protected void updateDistanceFromHome() {
