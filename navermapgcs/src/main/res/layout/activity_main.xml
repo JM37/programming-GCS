@@ -82,56 +82,11 @@
         android:layout_column="1"
         android:layout_alignParentStart="true"
         android:layout_alignParentLeft="true"
-        android:layout_marginStart="10dp"
-        android:layout_marginLeft="10dp"
+        android:layout_marginStart="30dp"
+        android:layout_marginLeft="30dp"
         android:layout_toLeftOf="@+id/btnConnect"
         android:spinnerMode="dropdown"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
-        android:id="@+id/speedValueTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_column="1"
-        android:layout_gravity="left"
-        android:layout_marginEnd="10dp"
-        android:layout_marginRight="10dp"
-        android:paddingTop="5dp"
-        android:paddingBottom="5dp"
-        android:text="0m/s"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        app:layout_constraintEnd_toStartOf="@+id/batteryStateTextView"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
-        android:id="@+id/distanceValueTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_column="1"
-        android:layout_gravity="left"
-        android:layout_marginEnd="10dp"
-        android:layout_marginRight="10dp"
-        android:paddingTop="5dp"
-        android:paddingBottom="5dp"
-        android:text="0m"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        app:layout_constraintEnd_toStartOf="@+id/speedValueTextView"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
-        android:id="@+id/altitudeValueTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_column="1"
-        android:layout_gravity="left"
-        android:layout_marginEnd="10dp"
-        android:layout_marginRight="10dp"
-        android:paddingTop="5dp"
-        android:paddingBottom="5dp"
-        android:text="0m"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        app:layout_constraintEnd_toStartOf="@+id/distanceValueTextView"
+        app:layout_constraintStart_toEndOf="@+id/batteryStateTextView"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
@@ -140,13 +95,74 @@
         android:layout_height="wrap_content"
         android:layout_column="1"
         android:layout_gravity="left"
-        android:layout_marginEnd="10dp"
-        android:layout_marginRight="10dp"
+        android:layout_marginStart="30dp"
+        android:layout_marginLeft="30dp"
         android:paddingTop="5dp"
         android:paddingBottom="5dp"
-        android:text="0%"
+        android:text="0V"
         android:textAppearance="?android:attr/textAppearanceMedium"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/linearLayout"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/altitudeValueTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_column="1"
+        android:layout_gravity="left"
+        android:layout_marginStart="30dp"
+        android:layout_marginLeft="30dp"
+        android:paddingTop="5dp"
+        android:paddingBottom="5dp"
+        android:text="0m"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        app:layout_constraintStart_toEndOf="@+id/modeSelect"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/speedValueTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_column="1"
+        android:layout_gravity="left"
+        android:layout_marginStart="30dp"
+        android:layout_marginLeft="30dp"
+        android:paddingTop="5dp"
+        android:paddingBottom="5dp"
+        android:text="0m/s"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        app:layout_constraintStart_toEndOf="@+id/altitudeValueTextView"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/YawValueTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_column="1"
+        android:layout_gravity="left"
+        android:layout_marginStart="30dp"
+        android:layout_marginLeft="30dp"
+        android:paddingTop="5dp"
+        android:paddingBottom="5dp"
+        android:text="0deg"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        app:layout_constraintStart_toEndOf="@+id/speedValueTextView"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/GPSValueTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_column="1"
+        android:layout_gravity="left"
+        android:layout_marginStart="30dp"
+        android:layout_marginLeft="30dp"
+        android:paddingTop="5dp"
+        android:paddingBottom="5dp"
+        android:text="0"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        app:layout_constraintStart_toEndOf="@+id/YawValueTextView"
+        app:layout_constraintTop_toTopOf="parent" />
+
 
 </android.support.constraint.ConstraintLayout>

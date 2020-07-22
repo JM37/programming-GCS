@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.graphics.PointF;
 import android.os.Handler;
 import android.support.annotation.NonNull;
@@ -20,6 +21,8 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.naver.maps.map.LocationTrackingMode;
+import com.naver.maps.map.util.FusedLocationSource;
 import com.o3dr.android.client.ControlTower;
 import com.o3dr.android.client.Drone;
 import com.o3dr.android.client.apis.ControlApi;
@@ -34,6 +37,7 @@ import com.o3dr.android.client.utils.video.MediaCodecManager;
 import com.o3dr.services.android.lib.coordinate.LatLong;
 import com.o3dr.services.android.lib.coordinate.LatLongAlt;
 import com.o3dr.services.android.lib.drone.attribute.AttributeEvent;
+import com.o3dr.services.android.lib.drone.attribute.AttributeEventExtra;
 import com.o3dr.services.android.lib.drone.attribute.AttributeType;
 import com.o3dr.services.android.lib.drone.companion.solo.SoloAttributes;
 import com.o3dr.services.android.lib.drone.companion.solo.SoloState;
@@ -41,6 +45,7 @@ import com.o3dr.services.android.lib.drone.connection.ConnectionParameter;
 import com.o3dr.services.android.lib.drone.connection.ConnectionType;
 import com.o3dr.services.android.lib.drone.mission.item.command.YawCondition;
 import com.o3dr.services.android.lib.drone.property.Altitude;
+import com.o3dr.services.android.lib.drone.property.Attitude;
 import com.o3dr.services.android.lib.drone.property.Battery;
 import com.o3dr.services.android.lib.drone.property.Gps;
 import com.o3dr.services.android.lib.drone.property.Home;
@@ -67,6 +72,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private int droneType = Type.TYPE_UNKNOWN;
     private ControlTower controlTower;
     private final Handler handler = new Handler();
+
+    private static final int LOCATION_PERMISSION_REQUEST_CODE = 1000;
+    private FusedLocationSource locationSource;
 
     private static final int DEFAULT_UDP_PORT = 14550;
     private static final int DEFAULT_USB_BAUD_RATE = 57600;
@@ -95,6 +103,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     protected void onCreate (Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         setContentView(R.layout.activity_main);
 
         final Context context = getApplicationContext();
@@ -122,6 +131,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
 
         mapFragment.getMapAsync(this);
+
+        locationSource = new FusedLocationSource(this, LOCATION_PERMISSION_REQUEST_CODE);
 
         btn1 = findViewById(R.id.MapType);
         btn2 = findViewById(R.id.Layer);
@@ -212,6 +223,20 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           @NonNull String[] permissions,  @NonNull int[] grantResults) {
+        if (locationSource.onRequestPermissionsResult(
+                requestCode, permissions, grantResults)) {
+            if (!locationSource.isActivated()) { // 권한 거부됨
+                myMap.setLocationTrackingMode(LocationTrackingMode.None);
+            }
+            return;
+        }
+        super.onRequestPermissionsResult(
+                requestCode, permissions, grantResults);
+    }
+
+    @Override
     public void onMapReady(final NaverMap naverMap) {
         this.myMap = naverMap;
         naverMap.setOnMapClickListener(new NaverMap.OnMapClickListener() {
@@ -229,6 +254,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 });
             }
         });
+
+        naverMap.setLocationTrackingMode(LocationTrackingMode.Face);
     }
 
     @Override
@@ -303,12 +330,16 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 updateAltitude();
                 break;
 
-            case AttributeEvent.HOME_UPDATED:
-                updateDistanceFromHome();
-                break;
-
             case AttributeEvent.BATTERY_UPDATED:
                 updateBattery();
+                break;
+
+            case AttributeEvent.ATTITUDE_UPDATED:
+                updateYaw();
+                break;
+
+            case AttributeEvent.GPS_POSITION:
+                updateGPS();
                 break;
 
             default:
@@ -450,39 +481,31 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     protected void updateAltitude() {
         TextView altitudeTextView = (TextView) findViewById(R.id.altitudeValueTextView);
         Altitude droneAltitude = this.drone.getAttribute(AttributeType.ALTITUDE);
-        altitudeTextView.setText(String.format("%3.1f", droneAltitude.getAltitude()) + "m");
+        altitudeTextView.setText(String.format("고도 " +"%3.1f", droneAltitude.getAltitude()) + "m");
     }
 
     protected void updateSpeed() {
         TextView speedTextView = (TextView) findViewById(R.id.speedValueTextView);
         Speed droneSpeed = this.drone.getAttribute(AttributeType.SPEED);
-        speedTextView.setText(String.format("%3.1f", droneSpeed.getGroundSpeed()) + "m/s");
+        speedTextView.setText(String.format("속도 " + "%3.1f", droneSpeed.getGroundSpeed()) + "m/s");
     }
 
     protected void updateBattery() {
         TextView BatteryTextView = (TextView) findViewById(R.id.batteryStateTextView);
         Battery droneBattery = this.drone.getAttribute(AttributeType.BATTERY);
-        BatteryTextView.setText(String.format("%3.1f", droneBattery.getBatteryVoltage()) + "%");
+        BatteryTextView.setText(String.format("전압 " + "%3.1f", droneBattery.getBatteryVoltage()) + "V");
     }
 
-    protected void updateDistanceFromHome() {
-        TextView distanceTextView = (TextView) findViewById(R.id.distanceValueTextView);
-        Altitude droneAltitude = this.drone.getAttribute(AttributeType.ALTITUDE);
-        double vehicleAltitude = droneAltitude.getAltitude();
-        Gps droneGps = this.drone.getAttribute(AttributeType.GPS);
-        LatLong vehiclePosition = droneGps.getPosition();
+    protected void updateYaw(){
+        TextView YawTextView = (TextView) findViewById(R.id.YawValueTextView);
+        Attitude droneYaw = this.drone.getAttribute(AttributeType.ATTITUDE);
+        YawTextView.setText(String.format("YAW " + "%3.1f", droneYaw.getYaw()) + "deg");
+    }
 
-        double distanceFromHome = 0;
-
-        if (droneGps.isValid()) {
-            LatLongAlt vehicle3DPosition = new LatLongAlt(vehiclePosition.getLatitude(), vehiclePosition.getLongitude(), vehicleAltitude);
-            Home droneHome = this.drone.getAttribute(AttributeType.HOME);
-            distanceFromHome = distanceBetweenPoints(droneHome.getCoordinate(), vehicle3DPosition);
-        } else {
-            distanceFromHome = 0;
-        }
-
-        distanceTextView.setText(String.format("%3.1f", distanceFromHome) + "m");
+    protected void updateGPS(){
+        TextView GPSTextView = (TextView) findViewById(R.id.GPSValueTextView);
+        Gps droneGPS = this.drone.getAttribute(AttributeType.GPS);
+        GPSTextView.setText(String.format("위성  " + "%3.1f", droneGPS.getSatellitesCount()));
     }
 
     protected void updateVehicleModesForType(int droneType) {
