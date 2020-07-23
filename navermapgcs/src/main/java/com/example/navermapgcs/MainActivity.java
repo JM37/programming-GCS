@@ -22,6 +22,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.naver.maps.map.LocationTrackingMode;
+import com.naver.maps.map.overlay.LocationOverlay;
 import com.naver.maps.map.util.FusedLocationSource;
 import com.o3dr.android.client.ControlTower;
 import com.o3dr.android.client.Drone;
@@ -255,6 +256,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         });
 
+        naverMap.setLocationSource(locationSource);
         naverMap.setLocationTrackingMode(LocationTrackingMode.Face);
     }
 
@@ -338,8 +340,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 updateYaw();
                 break;
 
+            case AttributeEvent.GPS_COUNT:
+                updateGPS_cnt();
+                break;
+
             case AttributeEvent.GPS_POSITION:
-                updateGPS();
+                updateGPS_pot();
                 break;
 
             default:
@@ -499,13 +505,20 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     protected void updateYaw(){
         TextView YawTextView = (TextView) findViewById(R.id.YawValueTextView);
         Attitude droneYaw = this.drone.getAttribute(AttributeType.ATTITUDE);
-        YawTextView.setText(String.format("YAW " + "%3.1f", droneYaw.getYaw()) + "deg");
+        if(droneYaw.getYaw() < 0)
+            YawTextView.setText(String.format("YAW " + "%3.1f", (droneYaw.getYaw())*-1) + "deg");
+        else
+            YawTextView.setText(String.format("YAW " + "%3.1f", droneYaw.getYaw()) + "deg");
     }
 
-    protected void updateGPS(){
+    protected void updateGPS_cnt(){
         TextView GPSTextView = (TextView) findViewById(R.id.GPSValueTextView);
         Gps droneGPS = this.drone.getAttribute(AttributeType.GPS);
         GPSTextView.setText(String.format("위성  " + "%3.1f", droneGPS.getSatellitesCount()));
+    }
+
+    protected void updateGPS_pot(){
+
     }
 
     protected void updateVehicleModesForType(int droneType) {
