@@ -61,20 +61,52 @@
         app:layout_constraintStart_toStartOf="parent" />
 
     <Button
-        android:id="@+id/btnArmTakeOff"
+        android:id="@+id/btnArm"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_column="1"
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
-        android:layout_marginStart="150dp"
-        android:layout_marginLeft="150dp"
+        android:layout_marginStart="5dp"
+        android:layout_marginLeft="5dp"
         android:layout_marginBottom="5dp"
         android:onClick="onArmButtonTap"
         android:text="Arm"
         android:visibility="invisible"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="@+id/btnConnect" />
+        app:layout_constraintStart_toEndOf="@+id/btnConnect" />
+
+    <Button
+        android:id="@+id/btnTakeOff"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_column="1"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginStart="5dp"
+        android:layout_marginLeft="5dp"
+        android:layout_marginBottom="5dp"
+        android:onClick="onArmButtonTap"
+        android:text="TakeOff"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/btnArm" />
+
+    <Button
+        android:id="@+id/btnLand"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_column="1"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginStart="5dp"
+        android:layout_marginLeft="5dp"
+        android:layout_marginBottom="5dp"
+        android:onClick="onArmButtonTap"
+        android:text="Land"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/btnTakeOff" />
 
     <Spinner
         android:id="@+id/modeSelect"

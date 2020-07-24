@@ -64,6 +64,7 @@ import com.naver.maps.map.NaverMap;
 import com.naver.maps.map.OnMapReadyCallback;
 import com.naver.maps.map.overlay.Marker;
 
+import java.text.AttributedCharacterIterator;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -464,7 +465,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     protected void updateArmButton() {
         State vehicleState = this.drone.getAttribute(AttributeType.STATE);
-        Button armButton = (Button) findViewById(R.id.btnArmTakeOff);
+        Button armButton = (Button) findViewById(R.id.btnArm);
 
         if (!this.drone.isConnected()) {
             armButton.setVisibility(View.INVISIBLE);
@@ -493,7 +494,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     protected void updateSpeed() {
         TextView speedTextView = (TextView) findViewById(R.id.speedValueTextView);
         Speed droneSpeed = this.drone.getAttribute(AttributeType.SPEED);
-        speedTextView.setText(String.format("속도 " + "%3.1f", droneSpeed.getGroundSpeed()) + "m/s");
+        speedTextView.setText(String.format("속도 " + "%d", droneSpeed.getGroundSpeed()) + "m/s");
     }
 
     protected void updateBattery() {
@@ -514,15 +515,16 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     protected void updateGPS_cnt(){
         TextView GPSTextView = (TextView) findViewById(R.id.GPSValueTextView);
         Gps droneGPS = this.drone.getAttribute(AttributeType.GPS);
-        GPSTextView.setText(String.format("위성  " + "%3.1f", droneGPS.getSatellitesCount()));
+        GPSTextView.setText(String.format("위성 " + "%d", droneGPS.getSatellitesCount()));
     }
 
     protected void updateGPS_pot(){
-
+        LocationOverlay locationOverlay = myMap.getLocationOverlay();
+        Gps drone_poGPS = this.drone.getAttribute(AttributeType.GPS);
+        locationOverlay.setPosition(new LatLng(drone_poGPS.getPosition().getLatitude(), drone_poGPS.getPosition().getLongitude()));
     }
 
     protected void updateVehicleModesForType(int droneType) {
-
         List<VehicleMode> vehicleModes = VehicleMode.getVehicleModePerDroneType(droneType);
         ArrayAdapter<VehicleMode> vehicleModeArrayAdapter = new ArrayAdapter<VehicleMode>(this, android.R.layout.simple_spinner_item, vehicleModes);
         vehicleModeArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
