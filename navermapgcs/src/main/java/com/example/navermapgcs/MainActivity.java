@@ -95,6 +95,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private String videoTag = "testvideotag";
 
+    private Marker markerGPS = new Marker();
+
     Handler mainHandler;
 
     NaverMap myMap;
@@ -256,9 +258,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 });
             }
         });
-
-        naverMap.setLocationSource(locationSource);
-        naverMap.setLocationTrackingMode(LocationTrackingMode.Face);
     }
 
     @Override
@@ -463,9 +462,32 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
+    /*
     protected void updateArmButton() {
         State vehicleState = this.drone.getAttribute(AttributeType.STATE);
         Button armButton = (Button) findViewById(R.id.btnArm);
+
+        if (!this.drone.isConnected()) {
+            armButton.setVisibility(View.INVISIBLE);
+        } else {
+            armButton.setVisibility(View.VISIBLE);
+        }
+
+        if (vehicleState.isFlying()) {
+            // Land
+            armButton.setText("LAND");
+        } else if (vehicleState.isArmed()) {
+            // Take off
+            armButton.setText("TAKE OFF");
+        } else if (vehicleState.isConnected()) {
+            // Connected but not Armed
+            armButton.setText("ARM");
+        }
+    }*/
+
+    protected void updateArmButton() {
+        State vehicleState = this.drone.getAttribute(AttributeType.STATE);
+        Button armButton = (Button) findViewById(R.id.btnArmTakeOff);
 
         if (!this.drone.isConnected()) {
             armButton.setVisibility(View.INVISIBLE);
@@ -507,7 +529,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         TextView YawTextView = (TextView) findViewById(R.id.YawValueTextView);
         Attitude droneYaw = this.drone.getAttribute(AttributeType.ATTITUDE);
         if(droneYaw.getYaw() < 0)
-            YawTextView.setText(String.format("YAW " + "%3.1f", (droneYaw.getYaw())*-1) + "deg");
+            YawTextView.setText(String.format("YAW " + "%3.1f", (droneYaw.getYaw())+360) + "deg");
         else
             YawTextView.setText(String.format("YAW " + "%3.1f", droneYaw.getYaw()) + "deg");
     }
@@ -516,12 +538,26 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         TextView GPSTextView = (TextView) findViewById(R.id.GPSValueTextView);
         Gps droneGPS = this.drone.getAttribute(AttributeType.GPS);
         GPSTextView.setText(String.format("위성 " + "%d", droneGPS.getSatellitesCount()));
+
     }
 
     protected void updateGPS_pot(){
         LocationOverlay locationOverlay = myMap.getLocationOverlay();
         Gps drone_poGPS = this.drone.getAttribute(AttributeType.GPS);
-        locationOverlay.setPosition(new LatLng(drone_poGPS.getPosition().getLatitude(), drone_poGPS.getPosition().getLongitude()));
+        //locationOverlay.setPosition(new LatLng(drone_poGPS.getPosition().getLatitude(), drone_poGPS.getPosition().getLongitude()));
+        LatLong dronePostionLatLong;
+        LatLng dronePosition;
+
+        try {
+            dronePostionLatLong = drone_poGPS.getPosition();
+            dronePosition = new LatLng(dronePostionLatLong.getLatitude(), dronePostionLatLong.getLongitude());
+        } catch (Exception e) {
+            Log.d("myLog","위치를 못 가지고 오는 에러 : "+e.getMessage());
+            dronePosition = new LatLng(35, 126);
+        }
+
+        markerGPS.setPosition(dronePosition);
+        markerGPS.setMap(myMap);
     }
 
     protected void updateVehicleModesForType(int droneType) {
