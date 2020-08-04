@@ -23,6 +23,7 @@ import android.widget.Toast;
 
 import com.naver.maps.map.LocationTrackingMode;
 import com.naver.maps.map.overlay.LocationOverlay;
+import com.naver.maps.map.overlay.OverlayImage;
 import com.naver.maps.map.util.FusedLocationSource;
 import com.o3dr.android.client.ControlTower;
 import com.o3dr.android.client.Drone;
@@ -528,10 +529,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     protected void updateYaw(){
         TextView YawTextView = (TextView) findViewById(R.id.YawValueTextView);
         Attitude droneYaw = this.drone.getAttribute(AttributeType.ATTITUDE);
-        if(droneYaw.getYaw() < 0)
+        if(droneYaw.getYaw() < 0){
             YawTextView.setText(String.format("YAW " + "%3.1f", (droneYaw.getYaw())+360) + "deg");
-        else
+            markerGPS.setAngle((float) droneYaw.getYaw() +360);
+        }
+        else {
             YawTextView.setText(String.format("YAW " + "%3.1f", droneYaw.getYaw()) + "deg");
+            markerGPS.setAngle((float) droneYaw.getYaw());
+        }
     }
 
     protected void updateGPS_cnt(){
@@ -542,9 +547,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     protected void updateGPS_pot(){
-        LocationOverlay locationOverlay = myMap.getLocationOverlay();
         Gps drone_poGPS = this.drone.getAttribute(AttributeType.GPS);
-        //locationOverlay.setPosition(new LatLng(drone_poGPS.getPosition().getLatitude(), drone_poGPS.getPosition().getLongitude()));
         LatLong dronePostionLatLong;
         LatLng dronePosition;
 
@@ -555,7 +558,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             Log.d("myLog","위치를 못 가지고 오는 에러 : "+e.getMessage());
             dronePosition = new LatLng(35, 126);
         }
-
+        markerGPS.setIcon(OverlayImage.fromResource(R.drawable.marker_icon));
         markerGPS.setPosition(dronePosition);
         markerGPS.setMap(myMap);
     }
