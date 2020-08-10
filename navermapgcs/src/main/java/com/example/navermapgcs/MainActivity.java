@@ -21,6 +21,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.naver.maps.map.CameraUpdate;
 import com.naver.maps.map.LocationTrackingMode;
 import com.naver.maps.map.overlay.LocationOverlay;
 import com.naver.maps.map.overlay.OverlayImage;
@@ -102,8 +103,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     NaverMap myMap;
     //private Context context;
-    boolean blayer = false;
+    boolean blayer, sw = false;
     Button btn1, btn2;
+    double high = 3.0;
 
     @Override
     protected void onCreate (Bundle savedInstanceState){
@@ -418,8 +420,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             });
         } else if (vehicleState.isArmed()) {
             // Take off
-            ControlApi.getApi(this.drone).takeoff(10, new AbstractCommandListener() {
-
+            ControlApi.getApi(this.drone).takeoff(high, new AbstractCommandListener() {
                 @Override
                 public void onSuccess() {
                     alertUser("Taking off...");
@@ -452,6 +453,48 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 }
             });
         }
+    }
+
+    public void onAltitudeTap(View view) {
+        final Button altitudeButton = (Button) findViewById(R.id.setAltitude);
+        final Button altitudePlusButton = (Button) findViewById(R.id.setAltitudePlus);
+        final Button altitudeMinusButton = (Button) findViewById(R.id.setAltitudeMinus);
+        altitudeButton.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View view)
+            {
+                sw = !sw;
+                if(sw == false) {
+                    altitudePlusButton.setVisibility(View.INVISIBLE);
+                    altitudeMinusButton.setVisibility(View.INVISIBLE);
+                }
+                if(sw == true){
+                    altitudePlusButton.setVisibility(View.VISIBLE);
+                    altitudeMinusButton.setVisibility(View.VISIBLE);
+                }
+            }
+        });
+        altitudePlusButton.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View view)
+            {
+                high += 0.5;
+                Toast.makeText(getApplicationContext(),
+                        "고도 " + high + "m", Toast.LENGTH_LONG).show();
+                altitudeButton.setText(String.valueOf(high));
+            }
+        });
+        altitudeMinusButton.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View view)
+            {
+                high -= 0.5;
+                Toast.makeText(getApplicationContext(),
+                        "고도 " + high + "m", Toast.LENGTH_LONG).show();
+                altitudeButton.setText(String.valueOf(high));
+            }
+        });
+        altitudeButton.setText(String.valueOf(high));
     }
 
     protected void updateConnectedButton(Boolean isConnected) {
@@ -525,6 +568,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     protected void updateGPS_pot(){
         Gps drone_poGPS = this.drone.getAttribute(AttributeType.GPS);
+        LocationOverlay locationOverlay = myMap.getLocationOverlay();
         LatLong dronePostionLatLong;
         LatLng dronePosition;
 
@@ -533,10 +577,13 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             dronePosition = new LatLng(dronePostionLatLong.getLatitude(), dronePostionLatLong.getLongitude());
         } catch (Exception e) {
             Log.d("myLog","위치를 못 가지고 오는 에러 : "+e.getMessage());
-            dronePosition = new LatLng(35, 126);
+            dronePosition = new LatLng(95, 37);
         }
         markerGPS.setIcon(OverlayImage.fromResource(R.drawable.marker_icon));
         markerGPS.setPosition(dronePosition);
+        CameraUpdate cameraUpdate = CameraUpdate.scrollTo(dronePosition);
+        myMap.moveCamera(cameraUpdate);
+        locationOverlay.setPosition(dronePosition);
         markerGPS.setMap(myMap);
     }
 

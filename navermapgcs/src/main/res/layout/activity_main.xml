@@ -76,6 +76,52 @@
         app:layout_constraintStart_toEndOf="@+id/btnConnect" />
 
 
+    <Button
+        android:id="@+id/setAltitude"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
+        android:layout_column="1"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginTop="50dp"
+        android:layout_marginEnd="10dp"
+        android:layout_marginRight="10dp"
+        android:onClick="onAltitudeTap"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/setAltitudePlus"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
+        android:layout_column="1"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="10dp"
+        android:layout_marginRight="10dp"
+        android:onClick="onAltitudeTap"
+        android:text="+0.5m"
+        android:visibility="invisible"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/setAltitude" />
+
+    <Button
+        android:id="@+id/setAltitudeMinus"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
+        android:layout_column="1"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="10dp"
+        android:layout_marginRight="10dp"
+        android:onClick="onAltitudeTap"
+        android:visibility="invisible"
+        android:text="-0.5m"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/setAltitudePlus" />
+
     <Spinner
         android:id="@+id/modeSelect"
         android:layout_width="wrap_content"
