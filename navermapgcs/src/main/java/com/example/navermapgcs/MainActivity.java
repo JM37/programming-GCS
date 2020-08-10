@@ -481,7 +481,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 high += 0.5;
                 Toast.makeText(getApplicationContext(),
                         "고도 " + high + "m", Toast.LENGTH_LONG).show();
-                altitudeButton.setText(String.valueOf(high));
+                altitudeButton.setText(String.valueOf(high + "m"));
             }
         });
         altitudeMinusButton.setOnClickListener(new View.OnClickListener(){
@@ -491,10 +491,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 high -= 0.5;
                 Toast.makeText(getApplicationContext(),
                         "고도 " + high + "m", Toast.LENGTH_LONG).show();
-                altitudeButton.setText(String.valueOf(high));
+                altitudeButton.setText(String.valueOf(high + "m"));
             }
         });
-        altitudeButton.setText(String.valueOf(high));
+        altitudeButton.setText(String.valueOf(high + "m"));
     }
 
     protected void updateConnectedButton(Boolean isConnected) {
