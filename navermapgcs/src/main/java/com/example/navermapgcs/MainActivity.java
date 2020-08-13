@@ -51,6 +51,7 @@ import com.o3dr.services.android.lib.drone.property.Altitude;
 import com.o3dr.services.android.lib.drone.property.Attitude;
 import com.o3dr.services.android.lib.drone.property.Battery;
 import com.o3dr.services.android.lib.drone.property.Gps;
+import com.o3dr.services.android.lib.drone.property.GuidedState;
 import com.o3dr.services.android.lib.drone.property.Home;
 import com.o3dr.services.android.lib.drone.property.Speed;
 import com.o3dr.services.android.lib.drone.property.State;
@@ -106,6 +107,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     boolean blayer, sw = false;
     Button btn1, btn2;
     double high = 3.0;
+    final Marker guideMarker = new Marker();
 
     @Override
     protected void onCreate (Bundle savedInstanceState){
@@ -246,19 +248,13 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public void onMapReady(final NaverMap naverMap) {
         this.myMap = naverMap;
-        naverMap.setOnMapClickListener(new NaverMap.OnMapClickListener() {
-            @Override
-            public void onMapClick(@NonNull PointF pointF, @NonNull LatLng latLng) {
-                final Marker marker = new Marker();
-                marker.setPosition(latLng);
-                marker.setMap(naverMap);
 
-                naverMap.setOnMapLongClickListener(new NaverMap.OnMapLongClickListener() {
-                    @Override
-                    public void onMapLongClick(@NonNull PointF pointF, @NonNull LatLng latLng) {
-                        marker.setMap(null);
-                    }
-                });
+        naverMap.setOnMapLongClickListener(new NaverMap.OnMapLongClickListener() {
+            @Override
+            public void onMapLongClick(@NonNull PointF pointF, @NonNull LatLng latLng) {
+                guideMarker.setPosition(latLng);
+                guideMarker.setMap(naverMap);
+                guideMode(latLng);
             }
         });
     }
@@ -585,6 +581,46 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         myMap.moveCamera(cameraUpdate);
         locationOverlay.setPosition(dronePosition);
         markerGPS.setMap(myMap);
+    }
+
+    protected void guideMode(final LatLng guideLatLng){
+        Gps guideGPS = this.drone.getAttribute(AttributeType.GPS);
+        final LatLong guidePositionLatLong = guideGPS.getPosition();
+
+        final AlertDialog.Builder alt_bld = new AlertDialog.Builder(MainActivity.this);
+        alt_bld.setMessage("확인하시면 가이드모드로 전환후 기체가 이동합니다.").setCancelable(false).setPositiveButton("확인", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                // Action for 'Yes' Button
+                VehicleApi.getApi(drone).setVehicleMode(VehicleMode.COPTER_GUIDED, new AbstractCommandListener() {
+                    @Override
+                    public void onSuccess() {
+                        ControlApi.getApi(drone).goTo(new LatLong(guideLatLng.latitude, guideLatLng.longitude), true, null);
+                        CheckGoal(drone, new LatLng(guidePositionLatLong.getLatitude(), guidePositionLatLong.getLongitude()));
+                    }
+                    @Override
+                    public void onError(int i) {
+                    }
+                    @Override
+                    public void onTimeout() {
+                    }
+                });
+            }
+        }).setNegativeButton("취소", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                dialog.cancel();
+                guideMarker.setMap(null);
+            }
+        });
+
+        AlertDialog alert = alt_bld.create();
+        alert.show();
+    }
+
+    public static boolean CheckGoal(final Drone drone, LatLng recentLatLng) {
+        GuidedState guidedState = drone.getAttribute(AttributeType.GUIDED_STATE);
+        LatLng target = new LatLng(guidedState.getCoordinate().getLatitude(),
+                guidedState.getCoordinate().getLongitude());
+        return target.distanceTo(recentLatLng) <= 1;
     }
 
     protected void updateVehicleModesForType(int droneType) {
