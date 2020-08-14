@@ -248,7 +248,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public void onMapReady(final NaverMap naverMap) {
         this.myMap = naverMap;
-
         naverMap.setOnMapLongClickListener(new NaverMap.OnMapLongClickListener() {
             @Override
             public void onMapLongClick(@NonNull PointF pointF, @NonNull LatLng latLng) {
@@ -584,10 +583,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     protected void guideMode(final LatLng guideLatLng){
-        Gps guideGPS = this.drone.getAttribute(AttributeType.GPS);
-        final LatLong guidePositionLatLong = guideGPS.getPosition();
-
         final AlertDialog.Builder alt_bld = new AlertDialog.Builder(MainActivity.this);
+        State guideVehicleState = this.drone.getAttribute(AttributeType.STATE);
+
         alt_bld.setMessage("확인하시면 가이드모드로 전환후 기체가 이동합니다.").setCancelable(false).setPositiveButton("확인", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 // Action for 'Yes' Button
@@ -595,7 +593,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     @Override
                     public void onSuccess() {
                         ControlApi.getApi(drone).goTo(new LatLong(guideLatLng.latitude, guideLatLng.longitude), true, null);
-                        CheckGoal(drone, new LatLng(guidePositionLatLong.getLatitude(), guidePositionLatLong.getLongitude()));
+
+                        if(CheckGoal(drone, guideLatLng) == false){
+                            guideMarker.setMap(null);
+                            Toast.makeText(getApplicationContext(), "체크 포인트에 도착했습니다. 가이드 모드를 종료합니다", Toast.LENGTH_LONG).show();
+                        }
                     }
                     @Override
                     public void onError(int i) {
@@ -613,7 +615,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         });
 
         AlertDialog alert = alt_bld.create();
-        alert.show();
+        if (guideVehicleState.isFlying()){
+            alert.show();
+        }
     }
 
     public static boolean CheckGoal(final Drone drone, LatLng recentLatLng) {
