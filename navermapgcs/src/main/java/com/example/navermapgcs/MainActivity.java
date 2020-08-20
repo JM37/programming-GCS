@@ -580,6 +580,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         myMap.moveCamera(cameraUpdate);
         locationOverlay.setPosition(dronePosition);
         markerGPS.setMap(myMap);
+
+        /*
+        if(CheckGoal(drone, guideLatLng) == true){
+            guideMarker.setMap(null);
+            Toast.makeText(getApplicationContext(), "체크 포인트에 도착했습니다. 가이드 모드를 종료합니다", Toast.LENGTH_LONG).show();
+        }*/
     }
 
     protected void guideMode(final LatLng guideLatLng){
@@ -593,11 +599,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     @Override
                     public void onSuccess() {
                         ControlApi.getApi(drone).goTo(new LatLong(guideLatLng.latitude, guideLatLng.longitude), true, null);
-
-                        if(CheckGoal(drone, guideLatLng) == false){
-                            guideMarker.setMap(null);
-                            Toast.makeText(getApplicationContext(), "체크 포인트에 도착했습니다. 가이드 모드를 종료합니다", Toast.LENGTH_LONG).show();
-                        }
                     }
                     @Override
                     public void onError(int i) {
