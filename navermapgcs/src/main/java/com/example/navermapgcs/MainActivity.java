@@ -25,6 +25,7 @@ import com.naver.maps.map.CameraUpdate;
 import com.naver.maps.map.LocationTrackingMode;
 import com.naver.maps.map.overlay.LocationOverlay;
 import com.naver.maps.map.overlay.OverlayImage;
+import com.naver.maps.map.overlay.PolylineOverlay;
 import com.naver.maps.map.util.FusedLocationSource;
 import com.o3dr.android.client.ControlTower;
 import com.o3dr.android.client.Drone;
@@ -69,6 +70,7 @@ import com.naver.maps.map.overlay.Marker;
 
 import java.text.AttributedCharacterIterator;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback, DroneListener, TowerListener, LinkListener {
@@ -108,6 +110,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     Button btn1, btn2;
     double high = 3.0;
     final Marker guideMarker = new Marker();
+    List<LatLng> coords = new ArrayList<>();
 
     @Override
     protected void onCreate (Bundle savedInstanceState){
@@ -566,10 +569,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         LocationOverlay locationOverlay = myMap.getLocationOverlay();
         LatLong dronePostionLatLong;
         LatLng dronePosition;
+        PolylineOverlay polyline = new PolylineOverlay();
 
         try {
             dronePostionLatLong = drone_poGPS.getPosition();
             dronePosition = new LatLng(dronePostionLatLong.getLatitude(), dronePostionLatLong.getLongitude());
+            Collections.addAll(coords, dronePosition);
+            polyline.setCoords(coords);
+            polyline.setMap(myMap);
         } catch (Exception e) {
             Log.d("myLog","위치를 못 가지고 오는 에러 : "+e.getMessage());
             dronePosition = new LatLng(95, 37);
@@ -599,6 +606,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     @Override
                     public void onSuccess() {
                         ControlApi.getApi(drone).goTo(new LatLong(guideLatLng.latitude, guideLatLng.longitude), true, null);
+                        CheckGoal(drone, guideLatLng);
                     }
                     @Override
                     public void onError(int i) {
@@ -621,8 +629,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     }
 
-    public static boolean CheckGoal(final Drone drone, LatLng recentLatLng) {
+    public boolean CheckGoal(final Drone drone, LatLng recentLatLng) {
         GuidedState guidedState = drone.getAttribute(AttributeType.GUIDED_STATE);
+        Toast.makeText(this, "가이드모드 고도 : " + guidedState.getCoordinate().getAltitude(), Toast.LENGTH_LONG).show();
         LatLng target = new LatLng(guidedState.getCoordinate().getLatitude(),
                 guidedState.getCoordinate().getLongitude());
         return target.distanceTo(recentLatLng) <= 1;
