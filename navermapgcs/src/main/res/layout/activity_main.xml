@@ -25,7 +25,7 @@
         app:layout_constraintTop_toTopOf="parent"></LinearLayout>
 
     <Button
-        android:id="@+id/MapType"
+        android:id="@+id/btnMapType"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="5dp"

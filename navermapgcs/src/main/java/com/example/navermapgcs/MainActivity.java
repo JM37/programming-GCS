@@ -111,6 +111,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     double high = 3.0;
     final Marker guideMarker = new Marker();
     List<LatLng> coords = new ArrayList<>();
+    LatLng GuideLat;
 
     @Override
     protected void onCreate (Bundle savedInstanceState){
@@ -146,7 +147,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         locationSource = new FusedLocationSource(this, LOCATION_PERMISSION_REQUEST_CODE);
 
-        btn1 = findViewById(R.id.MapType);
+        btn1 = findViewById(R.id.btnMapType);
         btn2 = findViewById(R.id.Layer);
         btn1.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -196,16 +197,26 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         if (!SelectedItems.isEmpty()) {
                             int index = (int) SelectedItems.get(0);
                             msg = ListItems.get(index);
-                            if(index == 0)
+                            if(index == 0){
                                 myMap.setMapType(NaverMap.MapType.Basic);
-                            if(index == 1)
+                                btn1.setText("Baasic");
+                            }
+                            if(index == 1) {
                                 myMap.setMapType(NaverMap.MapType.Navi);
-                            if(index == 2)
+                                btn1.setText("Navi");
+                            }
+                            if(index == 2) {
                                 myMap.setMapType(NaverMap.MapType.Satellite);
-                            if(index == 3)
+                                btn1.setText("Satellite");
+                            }
+                            if(index == 3) {
                                 myMap.setMapType(NaverMap.MapType.Hybrid);
-                            if(index == 4)
+                                btn1.setText("Hybrid");
+                            }
+                            if(index == 4) {
                                 myMap.setMapType(NaverMap.MapType.Terrain);
+                                btn1.setText("Terrain");
+                            }
                         }
                         Toast.makeText(getApplicationContext(),
                                 "Map Type Selected.\n"+ msg , Toast.LENGTH_LONG)
@@ -224,11 +235,13 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     void showLayer(){
         if(blayer == true){
             myMap.setLayerGroupEnabled(NaverMap.LAYER_GROUP_CADASTRAL, true);
+            btn2.setText("LAYER ON");
             Toast.makeText(getApplicationContext(),
                     "Map Layer Selected.\n"+ "지적편집도 ON" , Toast.LENGTH_LONG).show();
         }
         else {
             myMap.setLayerGroupEnabled(NaverMap.LAYER_GROUP_CADASTRAL, false);
+            btn2.setText("LAYER OFF");
             Toast.makeText(getApplicationContext(),
                     "Map Layer Selected.\n" + "지적편집도 OFF", Toast.LENGTH_LONG).show();
         }
@@ -257,6 +270,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 guideMarker.setPosition(latLng);
                 guideMarker.setMap(naverMap);
                 guideMode(latLng);
+                GuideLat = latLng;
             }
         });
     }
@@ -570,6 +584,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         LatLong dronePostionLatLong;
         LatLng dronePosition;
         PolylineOverlay polyline = new PolylineOverlay();
+        State GuideVehicleState = this.drone.getAttribute(AttributeType.STATE);
 
         try {
             dronePostionLatLong = drone_poGPS.getPosition();
@@ -588,11 +603,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         locationOverlay.setPosition(dronePosition);
         markerGPS.setMap(myMap);
 
-        /*
-        if(CheckGoal(drone, guideLatLng) == true){
-            guideMarker.setMap(null);
-            Toast.makeText(getApplicationContext(), "체크 포인트에 도착했습니다. 가이드 모드를 종료합니다", Toast.LENGTH_LONG).show();
-        }*/
+        if (GuideVehicleState.isFlying()) {
+            if((GuideVehicleState.getVehicleMode() == VehicleMode.COPTER_GUIDED)){
+                if(CheckGoal(drone, GuideLat) == true){
+                    guideMarker.setMap(null);
+                    Toast.makeText(getApplicationContext(), "체크 포인트에 도착했습니다. 가이드 모드를 종료합니다", Toast.LENGTH_LONG).show();
+                }
+            }
+        }
     }
 
     protected void guideMode(final LatLng guideLatLng){
@@ -606,7 +624,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     @Override
                     public void onSuccess() {
                         ControlApi.getApi(drone).goTo(new LatLong(guideLatLng.latitude, guideLatLng.longitude), true, null);
-                        CheckGoal(drone, guideLatLng);
                     }
                     @Override
                     public void onError(int i) {
