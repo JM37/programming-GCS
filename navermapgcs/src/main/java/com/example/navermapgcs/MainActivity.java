@@ -106,7 +106,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     NaverMap myMap;
     //private Context context;
-    boolean blayer, sw = false;
+    boolean blayer, sw, guideSw = false;
     Button btn1, btn2;
     double high = 3.0;
     final Marker guideMarker = new Marker();
@@ -264,13 +264,17 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public void onMapReady(final NaverMap naverMap) {
         this.myMap = naverMap;
+        final State GuideClickVehicleState = this.drone.getAttribute(AttributeType.STATE);
+
         naverMap.setOnMapLongClickListener(new NaverMap.OnMapLongClickListener() {
             @Override
             public void onMapLongClick(@NonNull PointF pointF, @NonNull LatLng latLng) {
-                guideMarker.setPosition(latLng);
-                guideMarker.setMap(naverMap);
-                guideMode(latLng);
-                GuideLat = latLng;
+                if (GuideClickVehicleState.isFlying()) {
+                    guideMarker.setPosition(latLng);
+                    guideMarker.setMap(naverMap);
+                    guideMode(latLng);
+                    GuideLat = latLng;
+                }
             }
         });
     }
@@ -603,11 +607,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         locationOverlay.setPosition(dronePosition);
         markerGPS.setMap(myMap);
 
-        if (GuideVehicleState.isFlying()) {
-            if((GuideVehicleState.getVehicleMode() == VehicleMode.COPTER_GUIDED)){
-                if(CheckGoal(drone, GuideLat) == true){
-                    guideMarker.setMap(null);
-                    Toast.makeText(getApplicationContext(), "체크 포인트에 도착했습니다. 가이드 모드를 종료합니다", Toast.LENGTH_LONG).show();
+        if(guideSw = true){
+            if (GuideVehicleState.isFlying()) {
+                if((GuideVehicleState.getVehicleMode() == VehicleMode.COPTER_GUIDED)){
+                    if(CheckGoal(drone, GuideLat) == true){
+                        guideMarker.setMap(null);
+                        Toast.makeText(getApplicationContext(), "체크 포인트에 도착했습니다. 가이드 모드를 종료합니다", Toast.LENGTH_LONG).show();
+                        guideSw = false;
+                    }
                 }
             }
         }
@@ -623,6 +630,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 VehicleApi.getApi(drone).setVehicleMode(VehicleMode.COPTER_GUIDED, new AbstractCommandListener() {
                     @Override
                     public void onSuccess() {
+                        guideSw = true;
                         ControlApi.getApi(drone).goTo(new LatLong(guideLatLng.latitude, guideLatLng.longitude), true, null);
                     }
                     @Override
@@ -637,6 +645,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             public void onClick(DialogInterface dialog, int id) {
                 dialog.cancel();
                 guideMarker.setMap(null);
+                guideSw = false;
             }
         });
 
@@ -648,9 +657,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     public boolean CheckGoal(final Drone drone, LatLng recentLatLng) {
         GuidedState guidedState = drone.getAttribute(AttributeType.GUIDED_STATE);
-        Toast.makeText(this, "가이드모드 고도 : " + guidedState.getCoordinate().getAltitude(), Toast.LENGTH_LONG).show();
         LatLng target = new LatLng(guidedState.getCoordinate().getLatitude(),
                 guidedState.getCoordinate().getLongitude());
+        Toast.makeText(this, "가이드모드 고도 : " +  guidedState.getCoordinate().getAltitude() + "///" + "가이드모드 거리 : " + target.distanceTo(recentLatLng), Toast.LENGTH_LONG).show();
         return target.distanceTo(recentLatLng) <= 1;
     }
 
